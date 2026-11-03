@@ -33,8 +33,8 @@ jobs:
 
           url = os.environ.get("SUPABASE_URL", "").strip()
           key = os.environ.get("SUPABASE_ANON_KEY", "").strip()
-          if not url or not key:
-              raise SystemExit("Set the SUPABASE_URL and SUPABASE_ANON_KEY repository secrets before deploying.")
+          if bool(url) != bool(key):
+              raise SystemExit("Set both SUPABASE_URL and SUPABASE_ANON_KEY, or leave both empty.")
           config = {
               "supabaseUrl": url,
               "supabaseAnonKey": key,

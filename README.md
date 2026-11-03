@@ -18,8 +18,8 @@ Minden felhasználói rekord az adott bejelentkezett fiókhoz tartozik. Az első
    - `SUPABASE_URL`: a Supabase-projekt URL-je
    - `SUPABASE_ANON_KEY`: a projekt publikus publishable/anon kulcsa
 2. A repó **Settings → Pages → Build and deployment** részén állítsd a source-ot **GitHub Actions** értékre.
-3. Pusholj a `main` branchre. A `Deploy static app to GitHub Pages` workflow létrehozza a publikáláshoz szükséges, nem titkos frontend-konfigurációt, majd közzéteszi a weboldalt.
-4. A publikált URL a repó **Settings → Pages** oldalán jelenik meg. A Supabase Authentication URL-beállításában pontosan ezt a címet is add meg.
+3. Pusholj a `main` branchre. A `Deploy static app to GitHub Pages` workflow Supabase-konfiguráció nélkül is közzéteszi az oldalt; ilyenkor az adatkapcsolat-beállítási tájékoztató látható, és a belépés le van tiltva.
+4. A publikált URL a repó **Settings → Pages** oldalán jelenik meg. Add hozzá a két repository secretet, majd a Supabase Authentication URL-beállításában pontosan ezt a címet is add meg. Ezután pusholj egy módosítást, vagy indítsd el újra kézzel a workflow-t.
 
 A böngészőben használt Supabase publishable/anon kulcs nyilvánosan látható; ez rendben van, mert az adatokat a Supabase adatbázis-szabályai védik. A `service_role` kulcsot, jelszót vagy SMTP hitelesítő adatot ne tegyél GitHub-fájlba vagy Pages secretbe.
 
