@@ -5,3 +5,9 @@ kiadasok.sqlite3
 *.py[cod]
 supabase-config.js
 dist/
+.streamlit/
+app.py
+expense_data.py
+eves_fizetesi_checklist_2026-11_2027-10.xlsx
+requirements.txt
+tests/
