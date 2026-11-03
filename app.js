@@ -16,11 +16,11 @@ const MONTHS = [
 ];
 
 const BASE_EXPENSES = [
-  { name: "Spotify", amount: 2190, frequency: "Havi" },
-  { name: "YouTube", amount: 5390, frequency: "Havi" },
-  { name: "Disney+", amount: 2990, frequency: "Havi" },
-  { name: "Netflix", amount: 4490, frequency: "Havi" },
-  { name: "Crunchyroll", amount: 1890, frequency: "Havi" },
+  { name: "Spotify", amount: 2190, frequency: "Havi", autoDebit: true },
+  { name: "YouTube", amount: 5390, frequency: "Havi", autoDebit: true },
+  { name: "Disney+", amount: 2990, frequency: "Havi", autoDebit: true },
+  { name: "Netflix", amount: 4490, frequency: "Havi", autoDebit: true },
+  { name: "Crunchyroll", amount: 1890, frequency: "Havi", autoDebit: true },
   { name: "Telekom", amount: 41569, frequency: "Havi" },
   { name: "Magyar Államkincstár Bíbor", amount: 21115, frequency: "Havi" },
   { name: "Magyar Államkincstár Julcsi", amount: 21115, frequency: "Havi" },
@@ -30,8 +30,8 @@ const BASE_EXPENSES = [
   { name: "BKK Bérlet Eszti", amount: 9450, frequency: "Havi" },
   { name: "BKK Bérlet Norbi", amount: 9450, frequency: "Havi" },
   { name: "Humble Bundle", amount: 4990, frequency: "Havi" },
-  { name: "Kifli előfizetés", amount: 2799, frequency: "Havi" },
-  { name: "Apple Cloud+", amount: 399, frequency: "Havi" },
+  { name: "Apple Cloud+", amount: 399, frequency: "Havi", autoDebit: true },
+  { name: "Kifli előfizetés", amount: 2799, frequency: "Havi", autoDebit: true },
   { name: "One előfizetés (internet)", amount: 7490, frequency: "Havi" },
   { name: "MOHU", amount: 7845, frequency: "Kéthavi", everyOtherMonth: true },
   { name: "ÉDV (víz)", amount: 21665, frequency: "Kéthavi", everyOtherMonth: true },
@@ -42,6 +42,15 @@ const EXTRA_CATEGORIES = [
   "Autószerelés",
   "Ruha",
   "Egyéb",
+];
+const SUBSCRIPTION_ORDER = [
+  "Spotify",
+  "Netflix",
+  "Disney+",
+  "Crunchyroll",
+  "Apple Cloud+",
+  "Kifli előfizetés",
+  "YouTube",
 ];
 
 const elements = {
@@ -57,6 +66,9 @@ const elements = {
   expenseNote: document.querySelector("#expense-note"),
   monthSelect: document.querySelector("#month-select"),
   checklist: document.querySelector("#checklist"),
+  subscriptionList: document.querySelector("#subscription-list"),
+  subscriptionTotal: document.querySelector("#subscription-total"),
+  subscriptionCount: document.querySelector("#subscription-count"),
   emptyMonth: document.querySelector("#empty-month"),
   checklistTitle: document.querySelector("#checklist-title"),
   monthCount: document.querySelector("#month-count"),
@@ -136,7 +148,7 @@ function makeSeedRows(userId) {
         frequency: expense.frequency,
         amount: expense.amount,
         due_date: null,
-        paid: false,
+        paid: Boolean(expense.autoDebit),
         note: "",
         source: "excel",
       });
@@ -253,7 +265,16 @@ function createExpenseRow(expense) {
   checkbox.type = "checkbox";
   checkbox.className = "expense-check";
   checkbox.checked = Boolean(expense.paid);
-  checkbox.setAttribute("aria-label", `${expense.name} kifizetve`);
+  const isAutoDebit = expense.source === "excel" && BASE_EXPENSES.some(
+    (item) => item.name === expense.name && item.autoDebit,
+  );
+  checkbox.disabled = isAutoDebit;
+  checkbox.setAttribute(
+    "aria-label",
+    isAutoDebit
+      ? `${expense.name} automatikusan levont fix költség, kifizetve`
+      : `${expense.name} kifizetve`,
+  );
   checkbox.addEventListener("change", async () => {
     checkbox.disabled = true;
     const nextPaid = checkbox.checked;
@@ -280,7 +301,7 @@ function createExpenseRow(expense) {
   const detail = document.createElement("span");
   detail.className = "expense-detail";
   detail.textContent = [
-    expense.frequency,
+    isAutoDebit ? "Fix költség · automatikusan levonva" : expense.frequency,
     expense.category || "",
     expense.due_date ? `Határidő: ${expense.due_date}` : "",
     expense.note || "",
@@ -291,6 +312,13 @@ function createExpenseRow(expense) {
   amount.className = "expense-amount";
   amount.textContent = formatMoney(expense.amount);
   row.append(checkbox, copy, amount);
+
+  if (isAutoDebit) {
+    const badge = document.createElement("span");
+    badge.className = "fixed-cost-badge";
+    badge.textContent = "Fix";
+    row.append(badge);
+  }
 
   if (expense.source === "extra") {
     const remove = document.createElement("button");
@@ -330,16 +358,40 @@ function renderDashboard() {
   document.querySelector("#month-status").textContent = `${thisMonth.count} tétel · ${thisMonth.paidCount} kifizetve`;
   document.querySelector("#month-outstanding").textContent = `Hátralék: ${formatMoney(thisMonth.outstanding)}`;
   elements.checklistTitle.textContent = `${thisMonth.label} checklistje`;
-  elements.monthCount.textContent = `${thisMonth.count} tétel`;
   elements.monthSelect.value = selectedMonth;
   renderChart(summary);
 
   const monthExpenses = expenses.filter((expense) => expense.month_key === selectedMonth);
+  const subscriptions = monthExpenses
+    .filter(isAutoDebit)
+    .sort(
+      (left, right) =>
+        SUBSCRIPTION_ORDER.indexOf(left.name) - SUBSCRIPTION_ORDER.indexOf(right.name),
+    );
+  const regularExpenses = monthExpenses.filter((expense) => !isAutoDebit(expense));
+  elements.subscriptionTotal.textContent = formatMoney(
+    subscriptions.reduce((total, expense) => total + Number(expense.amount), 0),
+  );
+  elements.subscriptionCount.textContent = `${subscriptions.length} automatikus levonás`;
+
+  const subscriptionFragment = document.createDocumentFragment();
+  subscriptions.forEach((expense) =>
+    subscriptionFragment.append(createExpenseRow(expense)),
+  );
+  elements.subscriptionList.replaceChildren(subscriptionFragment);
+
+  elements.monthCount.textContent = `${regularExpenses.length} tétel`;
   renderCategorySummary(monthExpenses);
   const fragment = document.createDocumentFragment();
-  monthExpenses.forEach((expense) => fragment.append(createExpenseRow(expense)));
+  regularExpenses.forEach((expense) => fragment.append(createExpenseRow(expense)));
   elements.checklist.replaceChildren(fragment);
-  elements.emptyMonth.hidden = monthExpenses.length !== 0;
+  elements.emptyMonth.hidden = regularExpenses.length !== 0;
+}
+
+function isAutoDebit(expense) {
+  return expense.source === "excel" && BASE_EXPENSES.some(
+    (item) => item.name === expense.name && item.autoDebit,
+  );
 }
 
 function renderCategorySummary(monthExpenses) {

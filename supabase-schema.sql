@@ -132,6 +132,19 @@ where source = 'excel'
 create unique index if not exists expenses_user_month_template_idx
   on public.expenses (user_id, month_key, template_id);
 
+update public.expenses
+set paid = true
+where source = 'excel'
+  and name in (
+    'Spotify',
+    'Netflix',
+    'Disney+',
+    'Crunchyroll',
+    'Apple Cloud+',
+    'Kifli előfizetés',
+    'YouTube'
+  );
+
 alter table public.expenses enable row level security;
 
 drop policy if exists "Users can read their own expenses" on public.expenses;

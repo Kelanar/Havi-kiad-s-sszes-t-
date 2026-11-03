@@ -53,6 +53,10 @@ h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 23px;
 .metric-card small { color: var(--muted); font-size: 11px; }
 .metric-primary { border-color: #e5e0f2; background: #f0eef8; }
 .metric-primary > span { color: #655699; }
+.subscription-panel { border-color: #e5e0f2; background: linear-gradient(135deg, #fff 0%, #fbfaff 100%); }
+.subscription-total { display: grid; justify-items: end; gap: 4px; }
+.subscription-total strong { color: #5c4c91; font-family: Georgia, "Times New Roman", serif; font-size: 22px; font-weight: 500; }
+.subscription-total span { color: var(--muted); font-size: 10px; }
 
 .panel { margin-bottom: 16px; padding: 24px 26px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: var(--shadow); }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -85,6 +89,10 @@ h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 23px;
 .is-paid .expense-name { color: #777e79; text-decoration: line-through; text-decoration-color: #a4b7aa; }
 .expense-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
 .expense-amount { font-size: 12px; font-weight: 650; white-space: nowrap; }
+.expense-check:disabled { opacity: 1; cursor: default; }
+.expense-row:has(.fixed-cost-badge) { border-color: #e7e2f2; background: #faf9fd; }
+.expense-row:has(.fixed-cost-badge) .expense-name { color: #5e5381; text-decoration: none; }
+.fixed-cost-badge { padding: 5px 8px; border-radius: 20px; color: #5c4c91; background: #eeebf8; font-size: 9px; font-weight: 750; letter-spacing: .04em; }
 .delete-button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 8px; color: #9a9690; background: transparent; font-size: 18px; }
 .delete-button:hover { color: #a14343; background: #f9eded; }
 .empty-state { padding: 22px 10px; color: var(--muted); text-align: center; font-size: 13px; }
@@ -125,7 +133,9 @@ input:focus, select:focus { border-color: #9e91cd; box-shadow: 0 0 0 3px rgb(88 
   .expense-form .button { grid-column: 1 / -1; }
   .expense-row { grid-template-columns: 22px minmax(0, 1fr) auto; gap: 9px; padding: 11px 9px; }
   .expense-amount { grid-column: 2; grid-row: 2; justify-self: start; color: var(--muted); font-size: 10px; }
+  .fixed-cost-badge { grid-column: 3; grid-row: 1; justify-self: end; }
   .delete-button { grid-column: 3; grid-row: 1 / span 2; }
+  .expense-row:has(.fixed-cost-badge) .delete-button { grid-row: 2; }
   .expense-copy { grid-column: 2; grid-row: 1; }
   .expense-detail { line-height: 1.45; }
   .page-footer { flex-direction: column; padding-bottom: 24px; }
