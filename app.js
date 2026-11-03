@@ -29,7 +29,7 @@ const BASE_EXPENSES = [
   { name: "MVM Áram", amount: 14801, frequency: "Havi" },
   { name: "BKK Bérlet Eszti", amount: 9450, frequency: "Havi" },
   { name: "BKK Bérlet Norbi", amount: 9450, frequency: "Havi" },
-  { name: "Humble Bundle", amount: 4990, frequency: "Havi" },
+  { name: "Humble Bundle", amount: 4990, frequency: "Havi", autoDebit: true },
   { name: "Apple Cloud+", amount: 399, frequency: "Havi", autoDebit: true },
   { name: "Kifli előfizetés", amount: 2799, frequency: "Havi", autoDebit: true },
   { name: "One előfizetés (internet)", amount: 7490, frequency: "Havi" },
@@ -51,6 +51,7 @@ const SUBSCRIPTION_ORDER = [
   "Apple Cloud+",
   "Kifli előfizetés",
   "YouTube",
+  "Humble Bundle",
 ];
 
 const elements = {
@@ -183,6 +184,19 @@ async function loadExpenses(userId) {
       .order("name"));
     if (error) throw error;
   }
+
+  const { error: autoDebitError } = await supabaseClient
+    .from("expenses")
+    .update({ paid: true })
+    .eq("user_id", userId)
+    .eq("source", "excel")
+    .eq("paid", false)
+    .in("name", SUBSCRIPTION_ORDER);
+  if (autoDebitError) throw autoDebitError;
+
+  data.forEach((expense) => {
+    if (isAutoDebit(expense)) expense.paid = true;
+  });
 
   expenses = data;
   renderDashboard();

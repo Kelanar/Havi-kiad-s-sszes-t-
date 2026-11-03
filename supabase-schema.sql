@@ -142,7 +142,8 @@ where source = 'excel'
     'Crunchyroll',
     'Apple Cloud+',
     'Kifli előfizetés',
-    'YouTube'
+    'YouTube',
+    'Humble Bundle'
   );
 
 alter table public.expenses enable row level security;
