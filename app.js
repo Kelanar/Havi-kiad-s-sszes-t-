@@ -18,7 +18,6 @@ const MONTHS = [
 const BASE_EXPENSES = [
   { name: "Spotify", amount: 2190, frequency: "Havi", autoDebit: true },
   { name: "YouTube", amount: 5390, frequency: "Havi", autoDebit: true },
-  { name: "Disney+", amount: 2990, frequency: "Havi", autoDebit: true },
   { name: "Netflix", amount: 4490, frequency: "Havi", autoDebit: true },
   { name: "Crunchyroll", amount: 1890, frequency: "Havi", autoDebit: true },
   { name: "Telekom", amount: 41569, frequency: "Havi" },
@@ -43,15 +42,21 @@ const EXTRA_CATEGORIES = [
   "Ruha",
   "Egyéb",
 ];
+const RETIRED_AUTO_DEBITS = [
+  { name: "Disney+", lastMonth: "2026-11" },
+];
 const SUBSCRIPTION_ORDER = [
   "Spotify",
   "Netflix",
-  "Disney+",
   "Crunchyroll",
   "Apple Cloud+",
   "Kifli előfizetés",
   "YouTube",
   "Humble Bundle",
+];
+const SUBSCRIPTION_DISPLAY_ORDER = [
+  ...SUBSCRIPTION_ORDER,
+  ...RETIRED_AUTO_DEBITS.map((expense) => expense.name),
 ];
 
 const elements = {
@@ -183,6 +188,24 @@ async function loadExpenses(userId) {
       .order("month_key")
       .order("name"));
     if (error) throw error;
+  }
+
+  for (const retiredExpense of RETIRED_AUTO_DEBITS) {
+    const { error: retiredExpenseError } = await supabaseClient
+      .from("expenses")
+      .delete()
+      .eq("user_id", userId)
+      .eq("source", "excel")
+      .eq("name", retiredExpense.name)
+      .gt("month_key", retiredExpense.lastMonth);
+    if (retiredExpenseError) throw retiredExpenseError;
+
+    data = data.filter(
+      (expense) =>
+        expense.source !== "excel" ||
+        expense.name !== retiredExpense.name ||
+        expense.month_key <= retiredExpense.lastMonth,
+    );
   }
 
   const { error: autoDebitError } = await supabaseClient
@@ -380,7 +403,8 @@ function renderDashboard() {
     .filter(isAutoDebit)
     .sort(
       (left, right) =>
-        SUBSCRIPTION_ORDER.indexOf(left.name) - SUBSCRIPTION_ORDER.indexOf(right.name),
+        SUBSCRIPTION_DISPLAY_ORDER.indexOf(left.name) -
+        SUBSCRIPTION_DISPLAY_ORDER.indexOf(right.name),
     );
   const regularExpenses = monthExpenses.filter((expense) => !isAutoDebit(expense));
   elements.subscriptionTotal.textContent = formatMoney(
@@ -403,8 +427,13 @@ function renderDashboard() {
 }
 
 function isAutoDebit(expense) {
-  return expense.source === "excel" && BASE_EXPENSES.some(
-    (item) => item.name === expense.name && item.autoDebit,
+  if (expense.source !== "excel") return false;
+  return (
+    BASE_EXPENSES.some((item) => item.name === expense.name && item.autoDebit) ||
+    RETIRED_AUTO_DEBITS.some(
+      (item) =>
+        item.name === expense.name && expense.month_key <= item.lastMonth,
+    )
   );
 }
 

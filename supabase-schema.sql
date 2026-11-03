@@ -138,13 +138,17 @@ where source = 'excel'
   and name in (
     'Spotify',
     'Netflix',
-    'Disney+',
     'Crunchyroll',
     'Apple Cloud+',
     'Kifli előfizetés',
     'YouTube',
     'Humble Bundle'
   );
+
+delete from public.expenses
+where source = 'excel'
+  and name = 'Disney+'
+  and month_key > '2026-11';
 
 alter table public.expenses enable row level security;
 
