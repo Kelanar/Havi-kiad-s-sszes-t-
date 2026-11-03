@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+tests/__pycache__/
+kiadasok.sqlite3
+*.py[cod]
+supabase-config.js
+dist/

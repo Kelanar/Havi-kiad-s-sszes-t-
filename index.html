@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f5f2">
+    <meta
+      name="description"
+      content="Éves kiadástervező fizetési checklisttel és havi összesítővel."
+    >
+    <title>Kiadástervező</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Kiadástervező – kezdőlap">
+          <span class="brand-mark" aria-hidden="true">K</span>
+          <span>Kiadástervező</span>
+        </a>
+        <div id="account-area" class="account-area"></div>
+      </header>
+
+      <section id="login-view" class="login-view" hidden>
+        <div class="login-card">
+          <p class="eyebrow">2026. november — 2027. október</p>
+          <h1>Tervezz nyugodtabban.</h1>
+          <p class="muted">
+            Jelentkezz be e-mailben, és a fizetési checklist minden eszközödön
+            szinkronban marad.
+          </p>
+          <form id="login-form">
+            <label for="login-email">E-mail-cím</label>
+            <input id="login-email" name="email" type="email" autocomplete="email" required>
+            <button class="button button-primary button-wide" type="submit">
+              Belépő link küldése
+            </button>
+          </form>
+          <p class="login-footnote">Jelszó nem szükséges. A belépő linket e-mailben küldjük.</p>
+        </div>
+      </section>
+
+      <section id="app-view" hidden>
+        <section class="intro">
+          <div>
+            <p class="eyebrow">A pénzügyeid, átláthatóan</p>
+            <h1>Jó érzés kipipálni.</h1>
+            <p class="muted">Kövesd a tervezett kiadásokat és a havi befizetéseket.</p>
+          </div>
+          <label class="month-picker">
+            <span>Tervezési hónap</span>
+            <select id="month-select" aria-label="Tervezési hónap"></select>
+          </label>
+        </section>
+
+        <div id="status-message" class="status-message" role="status" aria-live="polite" hidden></div>
+
+        <section class="metrics" aria-label="Éves összesítés">
+          <article class="metric-card metric-primary">
+            <span>Éves terv</span>
+            <strong id="annual-planned">—</strong>
+            <small>A 12 hónap tervezett kiadása</small>
+          </article>
+          <article class="metric-card">
+            <span>Kifizetve</span>
+            <strong id="annual-paid">—</strong>
+            <small id="paid-count">—</small>
+          </article>
+          <article class="metric-card">
+            <span>Ebben a hónapban</span>
+            <strong id="month-planned">—</strong>
+            <small id="month-outstanding">—</small>
+          </article>
+        </section>
+
+        <section class="panel overview-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Rálátás az évre</p>
+              <h2>Havi összesítő</h2>
+            </div>
+            <span class="legend"><i></i>tervezett <i class="legend-paid"></i>kifizetve</span>
+          </div>
+          <div id="monthly-chart" class="monthly-chart" aria-label="Havi kiadások grafikonja"></div>
+        </section>
+
+        <section class="panel checklist-panel">
+          <div class="section-heading checklist-heading">
+            <div>
+              <p class="eyebrow">A hónap teendői</p>
+              <h2 id="checklist-title">Fizetési checklist</h2>
+            </div>
+            <span id="month-count" class="count-pill"></span>
+          </div>
+          <div id="checklist" class="checklist"></div>
+          <div id="empty-month" class="empty-state" hidden>Nincs még kiadás erre a hónapra.</div>
+        </section>
+
+        <section class="panel add-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Váratlan vagy új tétel</p>
+              <h2>Plusz kiadás hozzáadása</h2>
+            </div>
+          </div>
+          <form id="expense-form" class="expense-form">
+            <label>
+              <span>Megnevezés</span>
+              <input id="expense-name" name="name" maxlength="100" placeholder="Például: autószerviz" required>
+            </label>
+            <label>
+              <span>Összeg (Ft)</span>
+              <input id="expense-amount" name="amount" type="number" min="1" step="1" placeholder="25000" required>
+            </label>
+            <label class="note-field">
+              <span>Megjegyzés <small>(opcionális)</small></span>
+              <input id="expense-note" name="note" maxlength="250" placeholder="Határidő, részletek…">
+            </label>
+            <button class="button button-primary" type="submit">
+              <span aria-hidden="true">+</span> Kiadás rögzítése
+            </button>
+          </form>
+        </section>
+
+        <footer class="page-footer">
+          <span>Az adataid a saját fiókodhoz tartoznak.</span>
+          <span>Excel-alapú éves terv · 2026/27</span>
+        </footer>
+      </section>
+    </main>
+
+    <script src="./supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
