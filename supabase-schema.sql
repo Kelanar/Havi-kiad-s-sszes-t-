@@ -16,6 +16,104 @@ create table if not exists public.expenses (
 create index if not exists expenses_user_month_idx
   on public.expenses (user_id, month_key);
 
+alter table public.expenses
+  add column if not exists template_id text;
+
+with ranked_expenses as (
+  select
+    id,
+    first_value(id) over (
+      partition by user_id, month_key, name
+      order by created_at, id
+    ) as keeper_id,
+    bool_or(paid) over (
+      partition by user_id, month_key, name
+    ) as any_paid
+  from public.expenses
+  where source = 'excel'
+)
+update public.expenses as expense
+set paid = ranked.any_paid
+from ranked_expenses as ranked
+where expense.id = ranked.keeper_id;
+
+with ranked_expenses as (
+  select
+    id,
+    row_number() over (
+      partition by user_id, month_key, name
+      order by created_at, id
+    ) as row_number
+  from public.expenses
+  where source = 'excel'
+)
+delete from public.expenses as expense
+using ranked_expenses as ranked
+where expense.id = ranked.id
+  and ranked.row_number > 1;
+
+update public.expenses
+set
+  name = 'BKK Bérlet Eszti',
+  amount = 9450,
+  frequency = 'Havi'
+where source = 'excel'
+  and name = 'BKK bérlet Eszti/Norbi';
+
+insert into public.expenses (
+  user_id, month_key, month_label, name, frequency, amount,
+  due_date, paid, note, source, template_id
+)
+select
+  user_id, month_key, month_label, 'BKK Bérlet Norbi', 'Havi', 9450,
+  due_date, paid, note, 'excel', 'BKK Bérlet Norbi'
+from public.expenses as original
+where original.source = 'excel'
+  and original.name = 'BKK Bérlet Eszti'
+  and not exists (
+    select 1
+    from public.expenses as existing
+    where existing.user_id = original.user_id
+      and existing.month_key = original.month_key
+      and existing.source = 'excel'
+      and existing.name = 'BKK Bérlet Norbi'
+  );
+
+update public.expenses
+set
+  name = 'Magyar Államkincstár Bíbor',
+  amount = 21115,
+  frequency = 'Havi'
+where source = 'excel'
+  and name = 'Magyar Államkincstár Julcsi/Bíbor';
+
+insert into public.expenses (
+  user_id, month_key, month_label, name, frequency, amount,
+  due_date, paid, note, source, template_id
+)
+select
+  user_id, month_key, month_label, 'Magyar Államkincstár Julcsi', 'Havi', 21115,
+  due_date, paid, note, 'excel', 'Magyar Államkincstár Julcsi'
+from public.expenses as original
+where original.source = 'excel'
+  and original.name = 'Magyar Államkincstár Bíbor'
+  and not exists (
+    select 1
+    from public.expenses as existing
+    where existing.user_id = original.user_id
+      and existing.month_key = original.month_key
+      and existing.source = 'excel'
+      and existing.name = 'Magyar Államkincstár Julcsi'
+  );
+
+update public.expenses
+set template_id = name
+where source = 'excel'
+  and template_id is null;
+
+create unique index if not exists expenses_user_month_template_idx
+  on public.expenses (user_id, month_key, template_id);
+
 alter table public.expenses enable row level security;
 
 drop policy if exists "Users can read their own expenses" on public.expenses;

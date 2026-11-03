@@ -22,11 +22,13 @@ const BASE_EXPENSES = [
   { name: "Netflix", amount: 4490, frequency: "Havi" },
   { name: "Crunchyroll", amount: 1890, frequency: "Havi" },
   { name: "Telekom", amount: 41569, frequency: "Havi" },
-  { name: "Magyar Államkincstár Julcsi/Bíbor", amount: 42230, frequency: "Havi" },
+  { name: "Magyar Államkincstár Bíbor", amount: 21115, frequency: "Havi" },
+  { name: "Magyar Államkincstár Julcsi", amount: 21115, frequency: "Havi" },
   { name: "Albérlet", amount: 300000, frequency: "Havi" },
   { name: "MVM Földgáz", amount: 6849, frequency: "Havi" },
   { name: "MVM Áram", amount: 14801, frequency: "Havi" },
-  { name: "BKK bérlet Eszti/Norbi", amount: 18900, frequency: "Havi" },
+  { name: "BKK Bérlet Eszti", amount: 9450, frequency: "Havi" },
+  { name: "BKK Bérlet Norbi", amount: 9450, frequency: "Havi" },
   { name: "Humble Bundle", amount: 4990, frequency: "Havi" },
   { name: "Kifli előfizetés", amount: 2799, frequency: "Havi" },
   { name: "Apple Cloud+", amount: 399, frequency: "Havi" },
@@ -121,6 +123,7 @@ function makeSeedRows(userId) {
         month_key: month.key,
         month_label: month.label,
         name: expense.name,
+        template_id: expense.name,
         frequency: expense.frequency,
         amount: expense.amount,
         due_date: null,
@@ -145,7 +148,10 @@ async function loadExpenses(userId) {
   if (data.length === 0) {
     const { error: insertError } = await supabaseClient
       .from("expenses")
-      .insert(makeSeedRows(userId));
+      .upsert(makeSeedRows(userId), {
+        onConflict: "user_id,month_key,template_id",
+        ignoreDuplicates: true,
+      });
     if (insertError) throw insertError;
 
     ({ data, error } = await supabaseClient
