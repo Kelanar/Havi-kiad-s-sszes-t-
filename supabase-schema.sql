@@ -14,10 +14,28 @@ create table if not exists public.expenses (
 );
 
 create index if not exists expenses_user_month_idx
-  on public.expenses (user_id, month_key);
+  on public.expenses (user_id, month_key  );
 
-alter table public.expenses
-  add column if not exists template_id text;
+  alter table public.expenses
+    add column if not exists category text;
+
+  update public.expenses
+  set category = 'Egyéb'
+  where source = 'extra'
+    and category is null;
+
+  alter table public.expenses
+    drop constraint if exists expenses_category_check;
+
+  alter table public.expenses
+    add constraint expenses_category_check
+    check (
+      category is null
+      or category in ('Bevásárlás', 'Revolut', 'Autószerelés', 'Ruha', 'Egyéb')
+    );
+
+  alter table public.expenses
+    add column if not exists template_id text;
 
 with ranked_expenses as (
   select

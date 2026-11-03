@@ -56,20 +56,15 @@
 
         <div id="status-message" class="status-message" role="status" aria-live="polite" hidden></div>
 
-        <section class="metrics" aria-label="Éves összesítés">
-          <article class="metric-card metric-primary">
-            <span>Éves terv</span>
-            <strong id="annual-planned">—</strong>
-            <small>A 12 hónap tervezett kiadása</small>
-          </article>
-          <article class="metric-card">
-            <span>Kifizetve</span>
-            <strong id="annual-paid">—</strong>
-            <small id="paid-count">—</small>
-          </article>
+        <section class="metrics" aria-label="Havi összesítés">
           <article class="metric-card">
             <span>Ebben a hónapban</span>
             <strong id="month-planned">—</strong>
+            <small id="month-status">—</small>
+          </article>
+          <article class="metric-card">
+            <span>Ebből kifizetve</span>
+            <strong id="month-paid">—</strong>
             <small id="month-outstanding">—</small>
           </article>
         </section>
@@ -83,6 +78,16 @@
             <span class="legend"><i></i>tervezett <i class="legend-paid"></i>kifizetve</span>
           </div>
           <div id="monthly-chart" class="monthly-chart" aria-label="Havi kiadások grafikonja"></div>
+        </section>
+
+        <section class="panel category-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Csak a kiválasztott hónap</p>
+              <h2>Plusz kiadások kategóriánként</h2>
+            </div>
+          </div>
+          <div id="category-summary" class="category-summary"></div>
         </section>
 
         <section class="panel checklist-panel">
@@ -112,6 +117,16 @@
             <label>
               <span>Összeg (Ft)</span>
               <input id="expense-amount" name="amount" type="number" min="1" step="1" placeholder="25000" required>
+            </label>
+            <label>
+              <span>Kategória</span>
+              <select id="expense-category" name="category" required>
+                <option value="Bevásárlás">Bevásárlás</option>
+                <option value="Revolut">Revolut</option>
+                <option value="Autószerelés">Autószerelés</option>
+                <option value="Ruha">Ruha</option>
+                <option value="Egyéb" selected>Egyéb</option>
+              </select>
             </label>
             <label class="note-field">
               <span>Megjegyzés <small>(opcionális)</small></span>

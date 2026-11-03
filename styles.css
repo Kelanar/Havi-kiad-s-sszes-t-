@@ -46,7 +46,7 @@ h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 23px;
 .month-picker { display: grid; gap: 7px; min-width: 205px; color: var(--muted); font-size: 11px; font-weight: 650; }
 .month-picker select { width: 100%; padding: 12px 37px 12px 13px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: var(--paper); font-size: 14px; }
 
-.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+.metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px; }
 .metric-card { min-height: 132px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; padding: 21px 23px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
 .metric-card > span { color: var(--muted); font-size: 12px; font-weight: 600; }
 .metric-card strong { font-family: Georgia, "Times New Roman", serif; font-size: clamp(24px, 3vw, 32px); font-weight: 500; letter-spacing: -.035em; }
@@ -67,6 +67,12 @@ h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 23px;
 .chart-bar-paid { background: #75ae91; }
 .chart-month-label { color: var(--muted); font-size: 9px; white-space: nowrap; }
 
+.category-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+.category-card { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid #efeee9; border-radius: 10px; background: #fdfcfb; }
+.category-name { color: var(--muted); font-size: 11px; font-weight: 650; }
+.category-card strong { overflow-wrap: anywhere; font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 500; }
+.category-card small { color: #99968f; font-size: 10px; }
+
 .checklist-heading { margin-bottom: 17px; }
 .count-pill { padding: 7px 10px; border-radius: 20px; color: #655699; background: var(--violet-soft); font-size: 11px; font-weight: 700; white-space: nowrap; }
 .checklist { display: grid; gap: 8px; }
@@ -83,10 +89,10 @@ h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 23px;
 .delete-button:hover { color: #a14343; background: #f9eded; }
 .empty-state { padding: 22px 10px; color: var(--muted); text-align: center; font-size: 13px; }
 
-.expense-form { display: grid; grid-template-columns: 1.1fr .65fr .9fr auto; align-items: end; gap: 12px; margin-top: 19px; }
+.expense-form { display: grid; grid-template-columns: 1.1fr .65fr .8fr .9fr auto; align-items: end; gap: 12px; margin-top: 19px; }
 .expense-form label, .login-card label { display: grid; gap: 7px; color: #686660; font-size: 11px; font-weight: 650; }
 .expense-form label small { color: #9b9891; font-weight: 400; }
-input { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #e6e4de; border-radius: 9px; outline: 0; color: var(--ink); background: #fff; font-size: 13px; }
+input, .expense-form select { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #e6e4de; border-radius: 9px; outline: 0; color: var(--ink); background: #fff; font-size: 13px; }
 input:focus, select:focus { border-color: #9e91cd; box-shadow: 0 0 0 3px rgb(88 70 168 / 10%); }
 .button { min-height: 40px; display: inline-flex; justify-content: center; align-items: center; gap: 7px; padding: 0 15px; border: 1px solid transparent; border-radius: 9px; font-size: 12px; font-weight: 700; }
 .button-primary { color: white; background: var(--violet); }
@@ -113,6 +119,7 @@ input:focus, select:focus { border-color: #9e91cd; box-shadow: 0 0 0 3px rgb(88 
   .metric-card { min-height: 104px; padding: 16px 18px; }
   .panel { padding: 20px 16px; }
   .monthly-chart { grid-template-columns: repeat(12, 42px); }
+  .category-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .expense-form { grid-template-columns: 1fr 1fr; }
   .expense-form .note-field { grid-column: 1 / -1; }
   .expense-form .button { grid-column: 1 / -1; }

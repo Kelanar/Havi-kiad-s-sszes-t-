@@ -36,6 +36,13 @@ const BASE_EXPENSES = [
   { name: "MOHU", amount: 7845, frequency: "Kéthavi", everyOtherMonth: true },
   { name: "ÉDV (víz)", amount: 21665, frequency: "Kéthavi", everyOtherMonth: true },
 ];
+const EXTRA_CATEGORIES = [
+  "Bevásárlás",
+  "Revolut",
+  "Autószerelés",
+  "Ruha",
+  "Egyéb",
+];
 
 const elements = {
   loginView: document.querySelector("#login-view"),
@@ -46,6 +53,7 @@ const elements = {
   expenseForm: document.querySelector("#expense-form"),
   expenseName: document.querySelector("#expense-name"),
   expenseAmount: document.querySelector("#expense-amount"),
+  expenseCategory: document.querySelector("#expense-category"),
   expenseNote: document.querySelector("#expense-note"),
   monthSelect: document.querySelector("#month-select"),
   checklist: document.querySelector("#checklist"),
@@ -53,6 +61,7 @@ const elements = {
   checklistTitle: document.querySelector("#checklist-title"),
   monthCount: document.querySelector("#month-count"),
   monthlyChart: document.querySelector("#monthly-chart"),
+  categorySummary: document.querySelector("#category-summary"),
   status: document.querySelector("#status-message"),
 };
 
@@ -139,7 +148,7 @@ function makeSeedRows(userId) {
 async function loadExpenses(userId) {
   let { data, error } = await supabaseClient
     .from("expenses")
-    .select("id, user_id, month_key, month_label, name, frequency, amount, due_date, paid, note, source")
+    .select("id, user_id, month_key, month_label, name, frequency, amount, due_date, paid, note, source, category")
     .eq("user_id", userId)
     .order("month_key")
     .order("name");
@@ -156,7 +165,7 @@ async function loadExpenses(userId) {
 
     ({ data, error } = await supabaseClient
       .from("expenses")
-      .select("id, user_id, month_key, month_label, name, frequency, amount, due_date, paid, note, source")
+      .select("id, user_id, month_key, month_label, name, frequency, amount, due_date, paid, note, source, category")
       .eq("user_id", userId)
       .order("month_key")
       .order("name"));
@@ -272,6 +281,7 @@ function createExpenseRow(expense) {
   detail.className = "expense-detail";
   detail.textContent = [
     expense.frequency,
+    expense.category || "",
     expense.due_date ? `Határidő: ${expense.due_date}` : "",
     expense.note || "",
   ].filter(Boolean).join(" · ");
@@ -313,16 +323,11 @@ function createExpenseRow(expense) {
 
 function renderDashboard() {
   const summary = summarize();
-  const annualPlanned = summary.reduce((total, month) => total + month.planned, 0);
-  const annualPaid = summary.reduce((total, month) => total + month.paid, 0);
-  const totalPaidCount = summary.reduce((total, month) => total + month.paidCount, 0);
-  const totalCount = summary.reduce((total, month) => total + month.count, 0);
   const thisMonth = summary.find((month) => month.key === selectedMonth);
 
-  document.querySelector("#annual-planned").textContent = formatMoney(annualPlanned);
-  document.querySelector("#annual-paid").textContent = formatMoney(annualPaid);
-  document.querySelector("#paid-count").textContent = `${totalPaidCount} / ${totalCount} tétel kifizetve`;
   document.querySelector("#month-planned").textContent = formatMoney(thisMonth.planned);
+  document.querySelector("#month-paid").textContent = formatMoney(thisMonth.paid);
+  document.querySelector("#month-status").textContent = `${thisMonth.count} tétel · ${thisMonth.paidCount} kifizetve`;
   document.querySelector("#month-outstanding").textContent = `Hátralék: ${formatMoney(thisMonth.outstanding)}`;
   elements.checklistTitle.textContent = `${thisMonth.label} checklistje`;
   elements.monthCount.textContent = `${thisMonth.count} tétel`;
@@ -330,10 +335,42 @@ function renderDashboard() {
   renderChart(summary);
 
   const monthExpenses = expenses.filter((expense) => expense.month_key === selectedMonth);
+  renderCategorySummary(monthExpenses);
   const fragment = document.createDocumentFragment();
   monthExpenses.forEach((expense) => fragment.append(createExpenseRow(expense)));
   elements.checklist.replaceChildren(fragment);
   elements.emptyMonth.hidden = monthExpenses.length !== 0;
+}
+
+function renderCategorySummary(monthExpenses) {
+  const extraExpenses = monthExpenses.filter((expense) => expense.source === "extra");
+  const fragment = document.createDocumentFragment();
+
+  EXTRA_CATEGORIES.forEach((category) => {
+    const categoryExpenses = extraExpenses.filter(
+      (expense) => (expense.category || "Egyéb") === category,
+    );
+    const total = categoryExpenses.reduce(
+      (sum, expense) => sum + Number(expense.amount),
+      0,
+    );
+    const card = document.createElement("article");
+    card.className = "category-card";
+
+    const name = document.createElement("span");
+    name.className = "category-name";
+    name.textContent = category;
+
+    const amount = document.createElement("strong");
+    amount.textContent = formatMoney(total);
+
+    const count = document.createElement("small");
+    count.textContent = `${categoryExpenses.length} tétel`;
+    card.append(name, amount, count);
+    fragment.append(card);
+  });
+
+  elements.categorySummary.replaceChildren(fragment);
 }
 
 async function handleLogin(event) {
@@ -373,6 +410,7 @@ async function handleAddExpense(event) {
     name: elements.expenseName.value.trim(),
     frequency: "Egyszeri",
     amount: Number(elements.expenseAmount.value),
+    category: elements.expenseCategory.value,
     due_date: null,
     paid: false,
     note: elements.expenseNote.value.trim(),
@@ -383,7 +421,7 @@ async function handleAddExpense(event) {
     const { data, error } = await supabaseClient
       .from("expenses")
       .insert(newExpense)
-      .select("id, user_id, month_key, month_label, name, frequency, amount, due_date, paid, note, source")
+      .select("id, user_id, month_key, month_label, name, frequency, amount, due_date, paid, note, source, category")
       .single();
     if (error) throw error;
     expenses.push(data);
